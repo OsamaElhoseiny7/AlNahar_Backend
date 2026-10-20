@@ -1,24 +1,22 @@
 const mongoose = require('mongoose');
 
-let isConnected = false;
+let cached = global._mongoose;
+if (!cached) cached = global._mongoose = { conn: null, promise: null };
 
 const connectDB = async () => {
-  if (isConnected) {
-    return;
+  if (cached.conn) return cached.conn;
+  if (!cached.promise) {
+    cached.promise = mongoose
+      .connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 10000 })
+      .then((m) => m);
   }
-
   try {
-    const db = await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-
-    isConnected = db.connections[0].readyState;
-    console.log('MongoDB Connected to Atlas');
-  } catch (error) {
-    console.error(`MongoDB Connection Error: ${error.message}`);
-    process.exit(1);
+    cached.conn = await cached.promise;
+  } catch (err) {
+    cached.promise = null;
+    throw err;          // بدل process.exit
   }
+  return cached.conn;
 };
 
 module.exports = connectDB;
