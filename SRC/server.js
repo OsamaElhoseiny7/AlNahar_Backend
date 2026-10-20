@@ -1,13 +1,14 @@
 const express = require('express');
-const dotenv = require('dotenv');
 const cors = require('cors');
-const connectDB = require('./config/db');
+require('dotenv').config();
 
-// تحميل متغيرات البيئة
-dotenv.config();
+const connectDB = require('./config/db'); // تأكد من مطابقة مسار ملف الـ DB لديك
 
-// الاتصال بقاعدة البيانات
-connectDB();
+// استيراد كافة المسارات (Routes)
+const authRoutes = require('./routes/authRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const machineRoutes = require('./routes/machineRoutes');
+const productRoutes = require('./routes/productRoutes');
 
 const app = express();
 
@@ -15,24 +16,27 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// المسارات الأساسية
-app.use('/api/orders', require('./routes/orderRoutes'));
-app.use('/api/machines', require('./routes/machineRoutes'));
-app.use('/api/products', require('./routes/productRoutes'));
+// الاتصال بقاعدة البيانات
+connectDB();
 
-// مسار المصادقة الجديد (أدمن ومستخدمين)
-app.use('/api/auth', require('./routes/authRoutes'));
+// جميع مسارات الـ API (API Endpoints)
+app.use('/api/auth', authRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/machines', machineRoutes);
+app.use('/api/products', productRoutes);
 
-// Root Route
+// Root Route للتأكد أن السيرفر يعمل
 app.get('/', (req, res) => {
-  res.send('Al-Nahar Factory API is running...');
+  res.send('API is running successfully on Vercel & Locally!');
 });
 
-// Error Handler Middleware
-app.use(require('./middlewares/errorHandler'));
+// التشغيل المحلي (Development)
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server is running locally on http://localhost:${PORT}`);
+  });
+}
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-});
+// تصدير الـ App لكي يعمل كـ Serverless Function على Vercel
+module.exports = app;
