@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node src/server.js",
-    "start": "node SRC/server.js"  },
+    "dev": "nodemon SRC/server.js",
+    "start": "node SRC/server.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
