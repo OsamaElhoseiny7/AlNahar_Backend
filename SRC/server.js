@@ -45,5 +45,7 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
+app.use(require('./middlewares/errorHandler'));
+
 // تصدير الـ App لكي يعمل كـ Serverless Function على Vercel
 module.exports = app;
